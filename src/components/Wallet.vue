@@ -16,6 +16,11 @@
   </div>
 
   <div class="content">
+
+    <section class="section">
+      <span class="section-header">Wallet native balance: {{ nativeBalance }}</span>
+    </section>
+
     <section class="section">
       <span class="section-header">Wallet NFTs</span>
 
@@ -57,6 +62,7 @@ export default {
     return {
       selectedTab: 'mumbai',
       walletNFTS: [],
+      nativeBalance: 0,
     }
   },
   methods: {
@@ -66,21 +72,30 @@ export default {
       this.load()
     },
     load() {
-      console.log(this.address)
       axios
-          .get('https://deep-index.moralis.io/api/v2/' + this.address + '/nft?chain=' + this.selectedTab, {
+          .get(Env.API_ADDRESS + this.address + '/nft?chain=' + this.selectedTab, {
             'headers': {
               'X-API-Key': Env.API_KEY
             }
           })
           .then(response => {
-            // console.log('response', response)
             if (response.data && response.data.result && response.data.result.length) {
               this.walletNFTS = response.data.result.map((item) => {
                 item.metadata = JSON.parse(item.metadata);
-                // console.log('item.metadata', item.metadata)
                 return item;
               })
+            }
+          })
+
+      axios
+          .get(Env.API_ADDRESS + this.address + '/balance?chain=' + this.selectedTab, {
+            'headers': {
+              'X-API-Key': Env.API_KEY
+            }
+          })
+          .then(response => {
+            if (response.data && response.data.balance) {
+              this.nativeBalance = response.data.balance;
             }
           })
     },
